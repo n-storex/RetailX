@@ -443,6 +443,7 @@ td small{color:var(--muted);font-size:.75rem}
 .folder-t b{font-weight:600}
 .folder-t span{font-size:.85rem;color:var(--muted)}
 .linkbtn{font:inherit;font-size:.85rem;border:0;background:none;padding:0;color:var(--accent);font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.auth-f .ver{margin-left:auto;font-family:var(--f-mono);font-size:.72rem;opacity:.8}
 .pw{position:relative}
 .pw .inp{padding-right:64px}
 .pw-t{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--accent);font-size:.8rem;font-weight:600;cursor:pointer;padding:4px 8px;border-radius:6px}
@@ -552,6 +553,13 @@ td small{color:var(--muted);font-size:.75rem}
         <button class="btn pri xl" type="button" id="folderBtn"></button>
         <button class="linkbtn" type="button" id="folderAlt" hidden>เลือกโฟลเดอร์อื่น</button>
       </div>
+      <form class="auth-form" id="shopForm" hidden autocomplete="off">
+        <p class="auth-note">เครื่องนี้ยังไม่ได้เชื่อมต่อกับร้าน ใส่รหัสร้านเพื่อเชื่อมต่อ ทำครั้งเดียวต่อเครื่อง</p>
+        <div class="field"><label for="shopPass">รหัสร้าน</label><div class="pw"><input class="inp" id="shopPass" type="password" autocomplete="off" required><button type="button" class="pw-t" data-pw="shopPass">แสดง</button></div></div>
+        <div class="err" id="shopErr"></div>
+        <button class="btn pri xl" id="shopBtn" type="submit">เชื่อมต่อเครื่องนี้</button>
+        <p class="auth-hint">ขอรหัสร้านจากเจ้าของร้านหรือผู้ดูแลระบบ</p>
+      </form>
       <div class="auth-msg" id="authMsg" hidden></div>
       <form id="loginForm" class="auth-form" hidden>
         <div class="field"><label for="lgUser">ชื่อผู้ใช้</label><input class="inp" id="lgUser" autocomplete="username" autocapitalize="none" spellcheck="false" required></div>
@@ -569,9 +577,10 @@ td small{color:var(--muted);font-size:.75rem}
         <div class="field"><label for="suPass2">ยืนยันรหัสผ่าน</label><input class="inp" id="suPass2" type="password" autocomplete="new-password" required></div>
         <div class="err" id="suErr"></div>
         <button class="btn pri xl" id="suBtn" type="submit">สร้างบัญชีและเข้าสู่ระบบ</button>
+        <p class="auth-hint" id="suImport" hidden>มีข้อมูลเดิมอยู่แล้ว? <button class="linkbtn" type="button" data-bk-import>นำเข้าไฟล์ pos-data.json หรือไฟล์สำรอง</button></p>
       </form>
     </div>
-    <div class="auth-f"><span class="sdot" id="authDot"></span><span id="authState">กำลังเชื่อมต่อข้อมูล…</span></div>
+    <div class="auth-f"><span class="sdot" id="authDot"></span><span id="authState">กำลังเชื่อมต่อข้อมูล…</span><span class="ver">v2.0 ออนไลน์</span></div>
   </div>
 </div>
 
@@ -789,6 +798,11 @@ td small{color:var(--muted);font-size:.75rem}
         </table></div>
       </div>
     </div>
+    <div class="card" id="bkCard" hidden>
+      <div class="card-h"><div><h3>สำรองและย้ายข้อมูล</h3><span class="s" id="bkWhere"></span></div></div>
+      <div class="tools-r"><button class="btn pri" id="bkExport" type="button">ดาวน์โหลดไฟล์สำรอง</button><button class="btn" type="button" data-bk-import>นำเข้าจากไฟล์</button><button class="btn danger" type="button" id="fbUnlink" hidden>ยกเลิกการเชื่อมต่อเครื่องนี้</button></div>
+      <p class="hint" style="margin:12px 0 0">ไฟล์สำรองมีสินค้า รูป บิล สต๊อก และบัญชีผู้ใช้ทั้งหมด ใช้ย้ายข้อมูลไปเครื่องหรือเบราว์เซอร์อื่นได้ ควรดาวน์โหลดเก็บไว้เป็นประจำ ถ้าล้างข้อมูลเบราว์เซอร์ ข้อมูลในเบราว์เซอร์นี้จะหายไป</p>
+    </div>
     <div class="card">
       <div class="card-h"><h3>สิทธิ์ตามบทบาท</h3><span class="s">สิ่งที่แต่ละบทบาทเห็นและทำได้</span></div>
       <div class="tbl-wrap"><table class="matrix" id="roleMatrix"></table></div>
@@ -869,10 +883,24 @@ td small{color:var(--muted);font-size:.75rem}
     <div class="modal-f"><span id="scanSum"></span><button class="btn pri" id="scmDone" type="button">เสร็จ</button></div>
   </div>
 </div>
+<div class="modal" id="im" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="imH">
+    <div class="modal-h"><span class="kic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg></span><div><h3 id="imH">นำเข้าข้อมูล</h3><span class="xm-sub" id="imFile"></span></div><button class="x" data-close aria-label="ปิด">×</button></div>
+    <div class="modal-b"><div class="xm-sum" id="imSum"></div><p class="hint" id="imWarn"></p><div class="err" id="imErr"></div></div>
+    <div class="modal-f end"><button class="btn" type="button" data-close>ยกเลิก</button><button class="btn pri" id="imGo" type="button">ยืนยันนำเข้า</button></div>
+  </div>
+</div>
+<input type="file" id="bkFile" accept=".json,application/json" hidden>
 <div id="printArea" aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" hidden></div>
 
 <script>
+/* ===== ฐานข้อมูลออนไลน์ (Firebase) — ให้ทุกเครื่องเห็นข้อมูลชุดเดียวกัน =====
+   ว่างไว้ (null) = เก็บข้อมูลในเบราว์เซอร์ของแต่ละเครื่อง
+   FIREBASE_CONFIG: คัดลอก firebaseConfig จาก Firebase console › Project settings › Your apps
+   SHOP_EMAIL: อีเมลของบัญชีร้านที่สร้างใน Authentication (รหัสผ่านของบัญชีนั้น = "รหัสร้าน" ห้ามใส่ในไฟล์นี้) */
+const FIREBASE_CONFIG={apiKey:"AIzaSyAOB9Y_bR_OdLOwE3I6jMiASnPYsib_SNo",authDomain:"storex-5620b.firebaseapp.com",projectId:"storex-5620b",storageBucket:"storex-5620b.firebasestorage.app",messagingSenderId:"815059261204",appId:"1:815059261204:web:3697da09ee8fe6db359401"};
+const SHOP_EMAIL='shop@storex.app';
 const CATS=[{id:'shirt',label:'เสื้อ'},{id:'pants',label:'กางเกง'},{id:'bag',label:'กระเป๋า'},{id:'hat',label:'หมวก'}];
 const catLabel=id=>(CATS.find(c=>c.id===id)||{label:id}).label;
 const catVar=id=>`var(--c-${id})`;
@@ -925,6 +953,8 @@ function setWriteState(){document.querySelectorAll('[data-w]').forEach(b=>b.disa
   ['checkout','pSave','rSave','loadSample','clearSample'].forEach(id=>{if(!S.canWrite)$(id).disabled=true})}
 function dbErr(e){const c=e&&e.code;
   if(c==='quota_exceeded')return 'พื้นที่ฐานข้อมูลเต็ม กรุณาลบข้อมูลเก่าออกก่อน';
+  if(c==='permission-denied')return 'ไม่มีสิทธิ์เข้าถึงข้อมูลร้าน เครื่องนี้อาจต้องเชื่อมต่อใหม่ด้วยรหัสร้าน';
+  if(c==='unavailable')return 'เชื่อมต่อฐานข้อมูลออนไลน์ไม่ได้ ระบบจะบันทึกให้เมื่ออินเทอร์เน็ตกลับมา';
   if(c==='no_permission')return 'ไม่มีสิทธิ์บันทึกลงโฟลเดอร์ข้อมูล เปิดหน้านี้ใหม่แล้วกดอนุญาต';
   if(c==='no_assets')return 'แนบรูปไม่ได้ในมุมมองนี้ (ต้องมีสิทธิ์แก้ไขหน้านี้)';
   if(c==='image_failed')return 'ย่อรูปไม่สำเร็จ ลองใช้รูปอื่น';
@@ -1007,7 +1037,7 @@ function qrSvg(text,size=112){if(typeof window.qrcode!=='function')return '<span
   catch(e){return '<span class="hint">สร้าง QR ไม่ได้</span>'}}
 function labelHtml(p,qr=92){return `<div class="lbl-card"><div><div class="ln">${esc(p.name)}</div><div class="lc">สี${esc(p.color)} · ${catLabel(p.cat)}</div></div>
   <div class="lp">${baht(p.price)}</div><div class="lbar">${barcodeSvg(p.code)}</div><div class="lqr">${qrSvg(p.code,qr)}</div></div>`}
-const canPrint=()=>S.mode==='local'; /* the claude.ai viewer cannot open the print dialog */
+const canPrint=()=>S.mode!=='cloud'; /* the claude.ai viewer cannot open the print dialog */
 function printLabels(list){list=list.filter(p=>p.code);if(!list.length){toast('ไม่มีสินค้าที่มีรหัสให้พิมพ์');return}
   $('printArea').innerHTML=`<div class="print-grid">${list.map(p=>labelHtml(p,80)).join('')}</div>`;
   document.body.classList.add('printing');setTimeout(()=>{window.print();setTimeout(()=>document.body.classList.remove('printing'),300)},50)}
@@ -1019,15 +1049,24 @@ async function shrinkImage(file,max=1000){const bmp=await createImageBitmap(file
   const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);g.drawImage(bmp,0,0,c.width,c.height);bmp.close?.();
   return await new Promise((res,rej)=>c.toBlob(b=>b?res(b):rej(fail('image_failed')),'image/jpeg',.85))}
 async function imgSave(blob){
+  if(S.mode==='firebase'){ /* photos live in Firestore as data URLs (one doc each, kept well under the 1 MB doc limit) */
+    let url=await blobToDataURL(blob);
+    if(url.length>850000)url=await blobToDataURL(await shrinkImage(blob,700));
+    const id=rid();await S.db.collection('images').doc(id).set({data:url,at:Date.now()});IMGC.set('g:'+id,url);return 'g:'+id}
+  if(S.mode==='local'&&S.store==='browser'){const id=rid();try{await idbPut('img:'+id,blob)}catch(e){throw fail(e?.name==='QuotaExceededError'?'quota_exceeded':'write_failed',e)}IMGC.set('b:'+id,URL.createObjectURL(blob));return 'b:'+id}
   if(S.mode==='local'){const dir=await S.folder.handle.getDirectoryHandle('images',{create:true}),name=rid()+'.jpg';
     const w=await (await dir.getFileHandle(name,{create:true})).createWritable();await w.write(blob);await w.close();IMGC.set('f:'+name,URL.createObjectURL(blob));return 'f:'+name}
   const as=window.claude?.use?await window.claude.use('assets'):null;if(!as)throw fail('no_assets');
   const a=await as.upload(blob);IMGC.set('a:'+a.id,a.url);return 'a:'+a.id}
 async function imgUrl(ref){if(!ref)return null;if(IMGC.has(ref))return IMGC.get(ref);let u=null;
-  try{if(ref.startsWith('f:')&&S.mode==='local'){const dir=await S.folder.handle.getDirectoryHandle('images');u=URL.createObjectURL(await (await dir.getFileHandle(ref.slice(2))).getFile())}
+  try{if(ref.startsWith('g:')&&S.mode==='firebase'){const d=await S.db.collection('images').doc(ref.slice(2)).get();u=d.exists?d.data().data:null}
+    else if(ref.startsWith('b:')){const b=await idbGet('img:'+ref.slice(2));if(b)u=URL.createObjectURL(b)}
+    else if(ref.startsWith('f:')&&S.mode==='local'&&S.store==='folder'){const dir=await S.folder.handle.getDirectoryHandle('images');u=URL.createObjectURL(await (await dir.getFileHandle(ref.slice(2))).getFile())}
     else if(ref.startsWith('a:'))u='/_blob/'+ref.slice(2)}catch(e){}
   IMGC.set(ref,u);return u}
-async function imgDel(ref){if(!ref)return;try{if(ref.startsWith('f:')&&S.mode==='local'){const dir=await S.folder.handle.getDirectoryHandle('images');await dir.removeEntry(ref.slice(2))}
+async function imgDel(ref){if(!ref)return;try{if(ref.startsWith('g:')&&S.mode==='firebase')await S.db.collection('images').doc(ref.slice(2)).delete();
+    else if(ref.startsWith('b:'))await idbDel('img:'+ref.slice(2));
+    else if(ref.startsWith('f:')&&S.mode==='local'&&S.store==='folder'){const dir=await S.folder.handle.getDirectoryHandle('images');await dir.removeEntry(ref.slice(2))}
     else if(ref.startsWith('a:')){const as=await window.claude?.use?.('assets');await as?.delete(ref.slice(2))}}catch(e){}IMGC.delete(ref)}
 function hydrateImgs(){document.querySelectorAll('img[data-img]:not([data-ld])').forEach(async im=>{im.dataset.ld='1';const u=await imgUrl(im.dataset.img);if(u)im.src=u;else im.classList.add('broken')})}
 new MutationObserver(hydrateImgs).observe(document.body,{childList:true,subtree:true});
@@ -1055,7 +1094,7 @@ document.addEventListener('click',e=>{
   const c=e.target.closest('[data-code]');if(c){openCode(c.dataset.code);return}
   const x=e.target.closest('[data-close]');if(x){x.closest('.modal').hidden=true;return}
   if(e.target.classList?.contains('modal')&&(e.target.id==='lb'||e.target.id==='cm'))e.target.hidden=true},true);
-document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;for(const id of ['lb','cm'])if(!$(id).hidden){$(id).hidden=true;e.stopPropagation();return}});
+document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;for(const id of ['lb','cm','im'])if(!$(id).hidden){$(id).hidden=true;e.stopPropagation();return}});
 
 /* ---------- barcode / QR scanners (they type the code fast and press Enter) ---------- */
 let scanBuf='',scanAt=0;
@@ -1227,7 +1266,7 @@ $('checkout').onclick=async()=>{
     total,qty:S.cart.reduce((a,l)=>a+l.qty,0),pay:S.pay,received:S.pay==='cash'?(got||total):total,change:S.pay==='cash'&&got?got-total:0,
     by:me()?.username||null,byName:me()?.name||null};
   S.busy=true;$('checkout').disabled=true;$('sellErr').textContent='';
-  try{await S.db.collection('sales').add(sale);S.cart=[];$('cashIn').value='';
+  try{await fbSettle(S.db.collection('sales').add(sale));S.cart=[];$('cashIn').value='';
     toast(`บันทึกบิล ${sale.no} · ${baht(total)}${sale.change?' · ทอน '+baht(sale.change):''}`)}
   catch(e){$('sellErr').textContent=dbErr(e)}
   S.busy=false;renderSell()};
@@ -1346,7 +1385,7 @@ $('rform').addEventListener('submit',async e=>{e.preventDefault();if(!S.db)retur
   const p=prodById($('rProd').value),qty=parseInt($('rQty').value),cost=$('rCost').value===''?null:+$('rCost').value,note=$('rNote').value.trim();
   if(!p){$('rErr').textContent='เลือกสินค้า';return} if(!(qty>0)){$('rErr').textContent='จำนวนต้องมากกว่า 0';return}
   $('rSave').disabled=true;$('rErr').textContent='';
-  try{await S.db.collection('receipts').add({pid:p.id,name:p.name,color:p.color,cat:p.cat,qty,cost,note,at:Date.now(),by:me()?.username||null,byName:me()?.name||null});
+  try{await fbSettle(S.db.collection('receipts').add({pid:p.id,name:p.name,color:p.color,cat:p.cat,qty,cost,note,at:Date.now(),by:me()?.username||null,byName:me()?.name||null}));
     toast(`รับเข้า ${p.name} ${p.color} +${qty} ชิ้น`);$('rQty').value='';$('rCost').value='';$('rNote').value=''}
   catch(err){$('rErr').textContent=dbErr(err)}
   $('rSave').disabled=false});
@@ -1550,14 +1589,14 @@ function buildWorkbook(o){
   const sheets=all.filter(s=>o.sheets.has(s.key));
   return{blob:xlsxBlob(sheets),name:`StoreX_ยอดขาย_${dstr(d0)}${d1!==d0?'_ถึง_'+dstr(d1):''}.xlsx`}}
 
-async function saveBlob(blob,name){
+async function saveBlob(blob,name,type={description:'Excel',accept:{'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':['.xlsx']}}){
   if(S.mode==='cloud'){const dl=window.claude?.use?await window.claude.use('downloads'):null;
     if(!dl){toast('ดาวน์โหลดไฟล์ไม่ได้ในมุมมองนี้');return}
     try{await dl.save({filename:name,data:blob});toast('ส่งออกไฟล์ Excel แล้ว')}catch(e){if(e?.code!=='declined')toast('ส่งออกไม่สำเร็จ')}return}
   if(window.showSaveFilePicker){try{
-      const fh=await window.showSaveFilePicker({suggestedName:name,startIn:S.folder?.handle||'downloads',types:[{description:'Excel',accept:{'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':['.xlsx']}}]});
-      const w=await fh.createWritable();await w.write(blob);await w.close();toast(`บันทึก ${fh.name} แล้ว`);return}
-    catch(e){if(e.name==='AbortError')return}}
+      const fh=await window.showSaveFilePicker({suggestedName:name,startIn:S.folder?.handle||'downloads',types:[type]});
+      const w=await fh.createWritable();await w.write(blob);await w.close();toast(`บันทึก ${fh.name} แล้ว`);return true}
+    catch(e){if(e.name==='AbortError')return false}}
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();
   setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000);toast('ดาวน์โหลดไฟล์ Excel แล้ว')}
 
@@ -1694,17 +1733,24 @@ function authRender(){
   $('auth').hidden=false;$('app').hidden=true;
   const msg=$('authMsg'),lf=$('loginForm'),sf=$('setupForm'),sub=$('authSub'),fs=$('folderStep');
   const show=(m,l,s,t)=>{msg.hidden=!m;if(m)msg.textContent=m;lf.hidden=!l;sf.hidden=!s;sub.textContent=t};
-  const local=S.mode==='local',F=S.folder||{};
-  fs.hidden=!(local&&F.state!=='ok');
-  $('folderInfo').hidden=!(local&&F.state==='ok');
-  if(local&&F.state==='ok')$('folderInfo').innerHTML=`ข้อมูลเก็บอยู่ในโฟลเดอร์ <b>${esc(F.name)}</b> · <button class="linkbtn" type="button" data-folder-pick>เปลี่ยนโฟลเดอร์</button>`;
-  if(local&&F.state!=='ok'){
-    const set=(t,x,b,alt)=>{$('folderTitle').textContent=t;$('folderText').textContent=x;$('folderBtn').hidden=!b;$('folderBtn').textContent=b||'';$('folderAlt').hidden=!alt};
-    if(F.state==='unsupported')set('เปิดด้วย Microsoft Edge หรือ Google Chrome','เบราว์เซอร์นี้บันทึกข้อมูลลงโฟลเดอร์ในเครื่องไม่ได้','',false);
-    else if(F.state==='prompt')set(`โฟลเดอร์ข้อมูล: ${F.handle.name}`,'กดปุ่มด้านล่าง แล้วกด "อนุญาต" ในหน้าต่างของเบราว์เซอร์ เพื่อให้ระบบอ่านและบันทึกข้อมูลได้','เปิดใช้งานโฟลเดอร์ข้อมูล',true);
-    else if(F.state==='error')set('เปิดข้อมูลไม่ได้',F.msg||'','เลือกโฟลเดอร์ใหม่',false);
-    else set('เลือกโฟลเดอร์เก็บข้อมูล','กดปุ่มแล้วเลือกโฟลเดอร์ D:\\ระบบขาย ระบบจะบันทึกข้อมูลทั้งหมดไว้ในไฟล์ pos-data.json ในโฟลเดอร์นั้น','เลือกโฟลเดอร์ D:\\ระบบขาย',false);
-    return show('',false,false,'เชื่อมต่อโฟลเดอร์ข้อมูล')}
+  const local=S.mode==='local',F=S.folder||{},fi=$('folderInfo'),fb=S.mode==='firebase',FB=S.fb||{};
+  $('suImport').hidden=!(local||fb);
+  $('shopForm').hidden=!(fb&&FB.state==='link');
+  if(fb&&FB.state!=='ok'){fs.hidden=true;fi.hidden=true;
+    if(FB.state==='link'){show('',false,false,'เชื่อมต่อเครื่องนี้กับร้าน');if(!lgFocused){lgFocused=true;setTimeout(()=>$('shopPass').focus(),0)}return}
+    if(FB.state==='error')return show(FB.msg||'เชื่อมต่อฐานข้อมูลออนไลน์ไม่ได้',false,false,'เชื่อมต่อไม่ได้');
+    return show('',false,false,'กำลังเชื่อมต่อฐานข้อมูลออนไลน์…')}
+  fs.hidden=!(local&&F.state==='error'); /* only when stored data cannot be opened; otherwise straight to login */
+  fi.hidden=!(fb||(local&&(F.state==='ok'||F.state==='prompt')));
+  if(fb)fi.textContent='ข้อมูลออนไลน์ ใช้ร่วมกันทุกเครื่องของร้าน';
+  if(local&&F.state==='ok')fi.innerHTML=S.store==='browser'?'ข้อมูลเก็บอยู่ในเบราว์เซอร์นี้':`ข้อมูลเก็บอยู่ในโฟลเดอร์ <b>${esc(F.name)}</b> · <button class="linkbtn" type="button" data-folder-pick>เปลี่ยนโฟลเดอร์</button>`;
+  if(local&&F.state==='prompt')fi.innerHTML=`ข้อมูลอยู่ในโฟลเดอร์ <b>${esc(F.name)}</b> · เมื่อกดเข้าสู่ระบบ เบราว์เซอร์จะขออนุญาตเข้าถึงโฟลเดอร์ ให้กด "อนุญาต"`;
+  if(local&&F.state==='error'){
+    $('folderTitle').textContent='เปิดข้อมูลไม่ได้';$('folderText').textContent=F.msg||'';
+    const canFolder='showDirectoryPicker' in window;$('folderBtn').hidden=!canFolder;$('folderBtn').textContent='เลือกโฟลเดอร์ข้อมูลอีกครั้ง';
+    $('folderAlt').hidden=!F.handle;$('folderAlt').textContent='เลิกใช้โฟลเดอร์ เก็บข้อมูลในเบราว์เซอร์นี้แทน';
+    return show('',false,false,'เปิดข้อมูลไม่ได้')}
+  if(local&&F.state==='prompt')return show('',true,false,'เข้าสู่ระบบเพื่อเริ่มใช้งาน');
   if(S.dbChecked&&!S.db)return show('เชื่อมต่อฐานข้อมูลไม่ได้ในมุมมองนี้ ลงชื่อเข้าใช้ claude.ai แล้วเปิดหน้านี้อีกครั้ง',false,false,'ไม่ได้เชื่อมต่อ');
   if(!S.loaded.u)return show('',false,false,'กำลังโหลดข้อมูลผู้ใช้…');
   if(!S.users.length){
@@ -1731,6 +1777,12 @@ function logout(msg){S.meId=null;S.cart=[];S.editUid=null;clearSess();closeAcct(
 let fails=0,lockUntil=0;
 $('loginForm').addEventListener('submit',async e=>{e.preventDefault();const err=$('lgErr'),btn=$('lgBtn');
   if(Date.now()<lockUntil){err.textContent=`ใส่รหัสผิดหลายครั้ง ลองใหม่ในอีก ${Math.ceil((lockUntil-Date.now())/1000)} วินาที`;return}
+  if(S.mode==='local'&&S.folder?.state==='prompt'){ /* connected folder: ask for access inside this click, then read its users */
+    let p='denied';try{p=await S.folder.handle.requestPermission({mode:'readwrite'})}catch(x){}
+    if(p!=='granted'){err.textContent='ต้องกด "อนุญาต" ให้เข้าถึงโฟลเดอร์ข้อมูลก่อน จึงจะเข้าสู่ระบบได้';return}
+    btn.disabled=true;btn.textContent='กำลังเปิดข้อมูล…';await openFolder(S.folder.handle);
+    for(let i=0;i<60&&!S.loaded.u;i++)await new Promise(r=>setTimeout(r,30));
+    btn.disabled=false;btn.textContent='เข้าสู่ระบบ';if(S.folder?.state!=='ok'||$('loginForm').hidden)return}
   const u=S.users.find(x=>x.username===normU($('lgUser').value));
   btn.disabled=true;btn.textContent='กำลังตรวจสอบ…';err.textContent='';
   const ok=await checkPw(u,$('lgPass').value);
@@ -1776,6 +1828,7 @@ function roleHelp(){const r=ROLES[$('uRole').value];$('roleHelp').innerHTML=`<b>
 $('uRole').addEventListener('change',roleHelp);roleHelp();
 const RORD={admin:0,manager:1,staff:2};
 function renderUsers(){
+  renderBackup();
   const list=[...S.users].sort((a,b)=>(RORD[a.role]??9)-(RORD[b.role]??9)||String(a.name).localeCompare(String(b.name),'th'));
   const on=S.users.filter(u=>u.active!==false).length;
   $('uCount').textContent=`${S.users.length} บัญชี · ใช้งาน ${on}`;
@@ -1821,40 +1874,54 @@ $('uform').addEventListener('submit',async e=>{e.preventDefault();if(!S.db||!isA
 function tickClock(){$('clock').textContent=new Date().toLocaleString('th-TH',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}
 tickClock();setInterval(tickClock,30000);
 const h=(location.hash||'').slice(1);setTab(['sell','products','stock','dash'].includes(h)?h:'sell');
-/* ---------- local folder storage (page opened as a file, outside claude.ai) ----------
-   Everything lives in <folder>/pos-data.json; a daily copy goes to <folder>/backup/.
-   LocalDB mimics the small slice of the claude db API this page uses, so the rest of the code is shared. */
+/* ---------- local storage outside claude.ai ----------
+   Default: this browser's IndexedDB (works on any host, e.g. GitHub Pages, no setup screen).
+   Optional: a folder the user connected earlier (<folder>/pos-data.json, daily copies in <folder>/backup/).
+   LocalDB mimics the slice of the claude db API this page uses, over either store. */
 const DATA_FILE='pos-data.json',COLS=['products','sales','receipts','users'];
 function idb(mode,fn){return new Promise((res,rej)=>{const r=indexedDB.open('pos-local',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onerror=()=>rej(r.error);
-  r.onsuccess=()=>{const tx=r.result.transaction('kv',mode),q=fn(tx.objectStore('kv'));tx.oncomplete=()=>res(q&&q.result);tx.onerror=()=>rej(tx.error)}})}
+  r.onsuccess=()=>{const tx=r.result.transaction('kv',mode),q=fn(tx.objectStore('kv'));tx.oncomplete=()=>res(q&&q.result);tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error)}})}
 const idbGet=k=>idb('readonly',s=>s.get(k)).catch(()=>null);
 const idbSet=(k,v)=>idb('readwrite',s=>s.put(v,k)).catch(()=>{});
+const idbPut=(k,v)=>idb('readwrite',s=>s.put(v,k));      /* throws, for data that must be saved */
+const idbDel=k=>idb('readwrite',s=>s.delete(k)).catch(()=>{});
+const idbKeys=()=>idb('readonly',s=>s.getAllKeys()).catch(()=>[]);
 const rid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,10);
 const clone=v=>JSON.parse(JSON.stringify(v));
 const dstr=t=>{const d=new Date(t),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())};
 const fail=(code,e)=>Object.assign(new Error(code),{code,cause:e});
+const emptyData=()=>({app:'pos',version:1,products:[],sales:[],receipts:[],users:[]});
+function normData(d){if(!d||typeof d!=='object')throw fail('bad_file');COLS.forEach(c=>{if(!Array.isArray(d[c]))d[c]=[]});return d}
+function folderIO(dir){return{kind:'folder',name:dir.name,
+  async load(){let fh;try{fh=await dir.getFileHandle(DATA_FILE)}catch(e){if(e.name==='NotFoundError')return{d:emptyData(),mtime:0};throw fail('no_permission',e)}
+    const f=await fh.getFile();let d;try{d=JSON.parse(await f.text())}catch(e){throw fail('bad_file',e)}return{d:normData(d),mtime:f.lastModified}},
+  async mtime(){return(await (await dir.getFileHandle(DATA_FILE)).getFile()).lastModified},
+  async save(txt){const fh=await dir.getFileHandle(DATA_FILE,{create:true}),w=await fh.createWritable();await w.write(txt);await w.close();return(await fh.getFile()).lastModified},
+  async backup(data){const bd=await dir.getDirectoryHandle('backup',{create:true}),name=`pos-data-${dstr(Date.now())}.json`;
+    try{await bd.getFileHandle(name);return}catch(e){}
+    const w=await (await bd.getFileHandle(name,{create:true})).createWritable();await w.write(JSON.stringify(data));await w.close();
+    const names=[];for await(const [n] of bd.entries())if(/^pos-data-\d{4}-\d\d-\d\d\.json$/.test(n))names.push(n);
+    names.sort().reverse().slice(60).forEach(n=>bd.removeEntry(n).catch(()=>{}))}}}
+const browserIO={kind:'browser',name:'เบราว์เซอร์นี้',
+  async load(){const t=await idb('readonly',s=>s.get('data'));if(!t)return{d:emptyData(),mtime:0};let d;try{d=JSON.parse(t)}catch(e){throw fail('bad_file',e)}
+    return{d:normData(d),mtime:(await idbGet('dataM'))||1}},
+  async mtime(){return(await idbGet('dataM'))||0},
+  async save(txt){const m=Date.now();await idbPut('data',txt);await idbPut('dataM',m);return m},
+  async backup(data){const k='bak:'+dstr(Date.now());if(await idbGet(k))return;await idbSet(k,JSON.stringify(data)); /* one copy a day, keep 14 */
+    (await idbKeys()).filter(x=>/^bak:/.test(x)).sort().reverse().slice(14).forEach(idbDel)}};
 class LocalDB{
-  constructor(dir){this.dir=dir;this.data=null;this.mtime=0;this.subs=[];this.q=Promise.resolve();
+  constructor(io){this.io=io;this.data=null;this.mtime=0;this.subs=[];this.q=Promise.resolve();
     this.bc='BroadcastChannel' in window?new BroadcastChannel('pos-local'):null;
     if(this.bc)this.bc.onmessage=()=>this.refresh();
     window.addEventListener('focus',()=>this.refresh())}
-  async read(){let fh;
-    try{fh=await this.dir.getFileHandle(DATA_FILE)}catch(e){if(e.name==='NotFoundError')return{d:{app:'pos',version:1,products:[],sales:[],receipts:[],users:[]},mtime:0};throw fail('no_permission',e)}
-    const f=await fh.getFile();let d;try{d=JSON.parse(await f.text())}catch(e){throw fail('bad_file',e)}
-    if(!d||typeof d!=='object')throw fail('bad_file');COLS.forEach(c=>{if(!Array.isArray(d[c]))d[c]=[]});return{d,mtime:f.lastModified}}
-  async open(){const r=await this.read();this.data=r.d;this.mtime=r.mtime;this.backup().catch(()=>{})}
-  async refresh(){try{const f=await (await this.dir.getFileHandle(DATA_FILE)).getFile();if(f.lastModified===this.mtime)return;
-    const r=await this.read();this.data=r.d;this.mtime=r.mtime;this.emit()}catch(e){}}
+  async open(){const r=await this.io.load();this.data=r.d;this.mtime=r.mtime;if(this.mtime)this.io.backup(this.data).catch(()=>{})}
+  async refresh(){try{const m=await this.io.mtime();if(!m||m===this.mtime)return;const r=await this.io.load();this.data=r.d;this.mtime=r.mtime;this.emit()}catch(e){}}
   write(mut){const run=async()=>{await this.refresh();const before=JSON.stringify(this.data);mut(this.data);this.data.savedAt=Date.now();
-      try{const fh=await this.dir.getFileHandle(DATA_FILE,{create:true}),w=await fh.createWritable();await w.write(JSON.stringify(this.data));await w.close();this.mtime=(await fh.getFile()).lastModified}
-      catch(e){this.data=JSON.parse(before);throw fail(e.name==='NotAllowedError'||e.name==='SecurityError'?'no_permission':'write_failed',e)}
+      try{this.mtime=await this.io.save(JSON.stringify(this.data))}
+      catch(e){this.data=JSON.parse(before);throw fail(e.name==='NotAllowedError'||e.name==='SecurityError'?'no_permission':e.name==='QuotaExceededError'?'quota_exceeded':'write_failed',e)}
       this.bc?.postMessage('changed');this.emit()};
     const p=this.q.then(run,run);this.q=p.catch(()=>{});return p}
-  async backup(){if(!this.mtime)return;const bd=await this.dir.getDirectoryHandle('backup',{create:true}),name=`pos-data-${dstr(Date.now())}.json`;
-    try{await bd.getFileHandle(name);return}catch(e){}
-    const w=await (await bd.getFileHandle(name,{create:true})).createWritable();await w.write(JSON.stringify(this.data));await w.close();
-    const names=[];for await(const [n] of bd.entries())if(/^pos-data-\d{4}-\d\d-\d\d\.json$/.test(n))names.push(n);
-    names.sort().reverse().slice(60).forEach(n=>bd.removeEntry(n).catch(()=>{}))}
+  replaceAll(d){return this.write(D=>{COLS.forEach(c=>D[c]=Array.isArray(d[c])?clone(d[c]):[])})}
   emit(){this.subs.forEach(s=>s.fire())}
   rows(col){return this.data[col]||(this.data[col]=[])}
   collection(col){return new LQuery(this,col)}
@@ -1865,6 +1932,7 @@ class LRef{
   set(v){return this.db.write(D=>{const a=D[this.col]||(D[this.col]=[]),i=a.findIndex(x=>x.id===this.id),d={...clone(v),id:this.id};if(i<0)a.push(d);else a[i]=d})}
   update(v){return this.db.write(D=>{const x=(D[this.col]||[]).find(x=>x.id===this.id);if(!x)throw fail('not_found');Object.assign(x,clone(v))})}
   delete(){return this.db.write(D=>{D[this.col]=(D[this.col]||[]).filter(x=>x.id!==this.id)})}
+  async get(){const x=this.db.rows(this.col).find(x=>x.id===this.id);return{exists:!!x,id:this.id,ref:this,data:()=>x}}
 }
 class LQuery{
   constructor(db,col,f=[],o=null){this.db=db;this.col=col;this.f=f;this.o=o}
@@ -1875,34 +1943,108 @@ class LQuery{
   async add(v){const r=this.doc();await r.set(v);return r}
   snap(){let a=this.db.rows(this.col).filter(x=>this.f.every(([k,v])=>x[k]===v));
     if(this.o){const[k,s]=this.o;a=[...a].sort((x,y)=>(x[k]>y[k]?1:x[k]<y[k]?-1:0)*s)}
-    return{docs:a.map(x=>({id:x.id,data:()=>x}))}}
+    return{docs:a.map(x=>({id:x.id,ref:new LRef(this.db,this.col,x.id),data:()=>x}))}}
   async get(){return this.snap()}
   onSnapshot(cb){const s={fire:()=>cb(this.snap())};this.db.subs.push(s);setTimeout(s.fire,0);return()=>{this.db.subs=this.db.subs.filter(x=>x!==s)}}
 }
 async function localBoot(){
-  if(!('showDirectoryPicker' in window)){S.folder={state:'unsupported'};setSync('เบราว์เซอร์นี้บันทึกลงโฟลเดอร์ไม่ได้','bad');authRender();return}
-  const h=await idbGet('dir');
+  const h='showDirectoryPicker' in window?await idbGet('dir'):null;
   if(h){let p='prompt';try{p=await h.queryPermission({mode:'readwrite'})}catch(e){}
     if(p==='granted'){await openFolder(h);return}
-    S.folder={state:'prompt',handle:h}}
-  else S.folder={state:'none'};
-  setSync('ยังไม่ได้เชื่อมต่อโฟลเดอร์ข้อมูล','');authRender()}
+    S.store='folder';S.folder={state:'prompt',handle:h,name:h.name}; /* permission is asked when the user presses Login */
+    setSync(`ข้อมูล: โฟลเดอร์ ${h.name} · รออนุญาตตอนเข้าสู่ระบบ`,'');authRender();return}
+  await openBrowser()}
+async function openBrowser(){
+  try{navigator.storage?.persist?.().catch(()=>{}); /* ask the browser not to evict this data under storage pressure */
+    const db=new LocalDB(browserIO);await db.open();S.store='browser';S.folder={state:'ok',name:'เบราว์เซอร์นี้'};startData(db)}
+  catch(e){S.folder={state:'error',msg:e.code==='bad_file'?'ข้อมูลในเบราว์เซอร์นี้อ่านไม่ได้':'เบราว์เซอร์นี้เก็บข้อมูลไม่ได้ (อาจเปิดแบบส่วนตัว / Incognito) ลองเปิดในหน้าต่างปกติ'};setSync('เก็บข้อมูลไม่ได้','bad');authRender()}}
 async function openFolder(h){
-  try{const db=new LocalDB(h);await db.open();await idbSet('dir',h);S.folder={state:'ok',handle:h,name:h.name};startData(db)}
+  try{const db=new LocalDB(folderIO(h));await db.open();await idbSet('dir',h);S.store='folder';S.folder={state:'ok',handle:h,name:h.name};startData(db)}
   catch(e){S.folder={state:'error',handle:h,msg:e.code==='bad_file'?`ไฟล์ ${DATA_FILE} ในโฟลเดอร์นี้อ่านไม่ได้ ใช้ไฟล์สำรองในโฟลเดอร์ backup แทนได้`:'เปิดโฟลเดอร์ข้อมูลไม่ได้ ลองเลือกโฟลเดอร์อีกครั้ง'};authRender()}}
 async function pickFolder(){try{const h=await window.showDirectoryPicker({id:'pos-data',mode:'readwrite'});
     if(S.db){await idbSet('dir',h);location.reload();return}await openFolder(h)}
   catch(e){if(e.name!=='AbortError')toast('เปิดโฟลเดอร์ไม่ได้')}}
-$('folderBtn').onclick=async()=>{const F=S.folder||{};
-  if(F.state==='prompt'){try{const p=await F.handle.requestPermission({mode:'readwrite'});if(p==='granted')await openFolder(F.handle);else toast('ต้องกดอนุญาตก่อน ระบบจึงจะบันทึกข้อมูลได้')}catch(e){toast('เปิดโฟลเดอร์ไม่ได้ ลองเลือกโฟลเดอร์อีกครั้ง')}return}
-  pickFolder()};
-$('folderAlt').onclick=pickFolder;
+async function useBrowserStore(){await idbDel('dir');location.reload()}
+$('folderBtn').onclick=pickFolder;
+$('folderAlt').onclick=useBrowserStore;
 document.addEventListener('click',e=>{if(e.target.closest('[data-folder-pick]'))pickFolder()});
+
+/* ---------- backup file: export everything (photos inlined), import replaces all data ---------- */
+const blobToDataURL=b=>new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=rej;fr.readAsDataURL(b)});
+const ownData=()=>(S.mode==='local'||S.mode==='firebase')&&!!S.db;
+const canImport=()=>ownData()&&(isAdmin()||(!S.meId&&S.loaded.u&&!S.users.length));
+const storeName=()=>S.mode==='firebase'?'ฐานข้อมูลออนไลน์ (Firebase)':S.store==='browser'?'เบราว์เซอร์นี้':'โฟลเดอร์ '+S.folder?.name;
+function lastBackup(){try{return +localStorage.getItem('pos.lastBackup')||0}catch(e){return 0}}
+function renderBackup(){const on=ownData();$('bkCard').hidden=!on;if(!on)return;const lb=lastBackup();$('fbUnlink').hidden=S.mode!=='firebase';
+  $('bkWhere').textContent=`ข้อมูลอยู่ที่: ${storeName()} · ดาวน์โหลดไฟล์สำรองล่าสุด: ${lb?tStr(lb):'ยังไม่เคย'}`}
+async function fsReplaceAll(d){const db=S.db;  /* Firestore: delete every doc, then write the file's docs, 400 per batch */
+  for(const c of [...COLS,'images']){const snap=await db.collection(c).get();let b=db.batch(),n=0;
+    const flush=async()=>{if(n){await b.commit();b=db.batch();n=0}};
+    for(const doc of snap.docs){if(c==='images'&&d.__keepImages?.has(doc.id))continue;b.delete(doc.ref);if(++n>=400)await flush()}
+    if(c!=='images')for(const x of d[c]){const{id,...rest}=x;b.set(id?db.collection(c).doc(id):db.collection(c).doc(),rest);if(++n>=400)await flush()}
+    await flush()}}
+const replaceAllData=d=>S.db.replaceAll?S.db.replaceAll(d):fsReplaceAll(d);
+$('fbUnlink').onclick=async e=>{const b=e.currentTarget;
+  if(!b.dataset.armed){b.dataset.armed='1';b.textContent='ยืนยัน? ต้องใส่รหัสร้านใหม่ครั้งหน้า';setTimeout(()=>{delete b.dataset.armed;b.textContent='ยกเลิกการเชื่อมต่อเครื่องนี้'},4000);return}
+  logout();await window.firebase?.auth().signOut()};
+$('bkExport').onclick=async()=>{if(!isAdmin()||!ownData())return;const btn=$('bkExport');btn.disabled=true;btn.textContent='กำลังเตรียมไฟล์…';
+  try{const d={products:clone(S.products),sales:clone(S.sales),receipts:clone(S.receipts),users:clone(S.users)},images={};
+    for(const p of d.products)if(p.img&&!images[p.img]){try{const u=await imgUrl(p.img);if(u)images[p.img]=await blobToDataURL(await (await fetch(u)).blob())}catch(e){}}
+    const out={...d,app:'pos',version:1,exportedAt:Date.now(),exportedBy:me()?.username||null,images};
+    const ok=await saveBlob(new Blob([JSON.stringify(out)],{type:'application/json'}),`StoreX-สำรอง-${dstr(Date.now())}.json`,{description:'ไฟล์สำรอง StoreX',accept:{'application/json':['.json']}});
+    if(ok!==false){try{localStorage.setItem('pos.lastBackup',String(Date.now()))}catch(e){}renderBackup()}}
+  catch(e){toast('สร้างไฟล์สำรองไม่สำเร็จ')}
+  btn.disabled=false;btn.textContent='ดาวน์โหลดไฟล์สำรอง'};
+let imPending=null;
+document.addEventListener('click',e=>{if(!e.target.closest('[data-bk-import]'))return;if(!canImport()){toast('นำเข้าข้อมูลได้เฉพาะผู้ดูแลระบบ');return}$('bkFile').click()});
+$('bkFile').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f||!canImport())return;
+  let d;try{d=normData(JSON.parse(await f.text()))}catch(x){toast('ไฟล์นี้ไม่ใช่ไฟล์ข้อมูล StoreX');return}
+  if(!d.products.length&&!d.users.length&&!d.sales.length){toast('ไฟล์นี้ไม่มีข้อมูล');return}
+  imPending=d;const nImg=Object.keys(d.images||{}).length,lostImg=d.products.filter(p=>p.img&&!(d.images||{})[p.img]).length;
+  $('imFile').textContent=f.name;
+  $('imSum').innerHTML=`สินค้า <b>${fmt(d.products.length)}</b> · บิล <b>${fmt(d.sales.length)}</b> · รับเข้า <b>${fmt(d.receipts.length)}</b> · ผู้ใช้ <b>${fmt(d.users.length)}</b> · รูป <b>${fmt(nImg)}</b>`;
+  const cur=S.products.length+S.sales.length+S.users.length;
+  $('imWarn').textContent=(cur?`ข้อมูลปัจจุบัน (${storeName()}) จะถูกแทนที่ทั้งหมด${S.mode==='firebase'?' ทุกเครื่องของร้าน':''} ควรดาวน์โหลดไฟล์สำรองก่อน · `:'')
+    +(d.users.length?'หลังนำเข้า ให้เข้าสู่ระบบด้วยบัญชีจากไฟล์นี้':'ไฟล์นี้ไม่มีบัญชีผู้ใช้ หลังนำเข้าต้องสร้างบัญชีผู้ดูแลระบบใหม่')
+    +(lostImg?` · รูปสินค้า ${lostImg} รูปไม่ได้อยู่ในไฟล์นี้ จะไม่แสดงรูป`:'');
+  $('imErr').textContent='';$('im').hidden=false};
+$('imGo').onclick=async()=>{const d=imPending;if(!d||!canImport())return;const btn=$('imGo');btn.disabled=true;btn.textContent='กำลังนำเข้า…';$('imErr').textContent='';
+  try{const map={};
+    for(const [ref,url] of Object.entries(d.images||{})){try{map[ref]=await imgSave(await (await fetch(url)).blob())}catch(e){}}
+    for(const p of d.products)if(p.img)p.img=map[p.img]||(await imgUrl(p.img)?p.img:null);
+    delete d.images;d.__keepImages=new Set(d.products.filter(p=>p.img?.startsWith('g:')).map(p=>p.img.slice(2)));
+    await replaceAllData(d);
+    imPending=null;$('im').hidden=true;codesChecked=false;logout();toast('นำเข้าข้อมูลแล้ว'+(d.users.length?' · เข้าสู่ระบบด้วยบัญชีจากไฟล์':''))}
+  catch(e){$('imErr').textContent=dbErr(e)}
+  btn.disabled=false;btn.textContent='ยืนยันนำเข้า'};
+
+/* ---------- Firebase: Firestore holds the data; one "shop" Auth account unlocks it per device ---------- */
+const FB_VER='10.12.2';
+/* Firestore resolves a write only when the server confirms; offline it is already safe in the local cache, so don't block the till */
+function fbSettle(p){if(S.mode!=='firebase')return p;let done=false;p.then(()=>done=true,e=>{if(done)toast(dbErr(e))});
+  return Promise.race([p,new Promise(r=>setTimeout(()=>{done=true;r()},2500))])}
+function loadJs(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(new Error('load '+src));document.head.appendChild(s)})}
+async function fbBoot(){S.mode='firebase';S.fb={state:'wait'};setSync('กำลังเชื่อมต่อฐานข้อมูลออนไลน์…','');authRender();
+  try{if(!window.firebase?.firestore)for(const m of ['app','auth','firestore'])await loadJs(`https://www.gstatic.com/firebasejs/${FB_VER}/firebase-${m}-compat.js`)}
+  catch(e){S.fb={state:'error',msg:'โหลดระบบฐานข้อมูลออนไลน์ไม่ได้ ตรวจการเชื่อมต่ออินเทอร์เน็ตแล้วรีเฟรชหน้า'};setSync('ออฟไลน์','bad');authRender();return}
+  if(!firebase.apps.length)firebase.initializeApp(FIREBASE_CONFIG);
+  const fs=firebase.firestore();
+  try{await fs.enablePersistence({synchronizeTabs:true})}catch(e){} /* keeps working through short outages; syncs when back online */
+  firebase.auth().onAuthStateChanged(u=>{
+    if(u){if(!S.db){S.fb={state:'ok'};startData(fs)}}
+    else if(S.db)location.reload();   /* device was unlinked (or shop code changed) */
+    else{S.fb={state:'link'};setSync('เครื่องนี้ยังไม่ได้เชื่อมต่อกับร้าน','');authRender()}})}
+$('shopForm').addEventListener('submit',async e=>{e.preventDefault();const err=$('shopErr'),btn=$('shopBtn'),pw=$('shopPass').value;if(!pw)return;
+  btn.disabled=true;btn.textContent='กำลังเชื่อมต่อ…';err.textContent='';
+  try{await firebase.auth().signInWithEmailAndPassword(SHOP_EMAIL,pw);$('shopPass').value='';lgFocused=false}
+  catch(x){const c=x?.code||'';err.textContent=/wrong-password|invalid-credential|invalid-login|user-not-found|invalid-email/.test(c)?'รหัสร้านไม่ถูกต้อง'
+    :/network/.test(c)?'เชื่อมต่ออินเทอร์เน็ตไม่ได้':/too-many-requests/.test(c)?'ลองผิดหลายครั้ง รอสักครู่แล้วลองใหม่':'เชื่อมต่อไม่สำเร็จ ('+c+')'}
+  btn.disabled=false;btn.textContent='เชื่อมต่อเครื่องนี้'});
 
 /* ---------- start ---------- */
 function startData(db){
   S.db=db;
-  const where=()=>S.mode==='local'?`โฟลเดอร์ ${S.folder.name}`:'claude.ai';
+  const where=()=>S.mode==='cloud'?'claude.ai':storeName();
   const sub=(col,key,q)=>q.onSnapshot(s=>{S[col]=s.docs.map(d=>({...d.data(),id:d.id}));S.loaded[key]=true;
       setSync(`ข้อมูล: ${where()} · อัปเดต ${hm(Date.now())} · สินค้า ${S.products.length} รายการ`,'ok');if(col==='users')authRender();render()},
     e=>{setSync('การเชื่อมต่อข้อมูลขาด รีเฟรชหน้าเพื่อเชื่อมต่อใหม่','bad')});
@@ -1917,7 +2059,8 @@ function startData(db){
   if(cdb){S.mode='cloud';
     try{const u=await window.claude.use('user');if(u){S.isOwner=!!(await u.isOwner());const c=await u.can('data.write');if(c===false){S.canWrite=false;showBanner('คุณมีสิทธิ์ดูอย่างเดียว · ขอสิทธิ์ Contributor จากเจ้าของเพื่อขายและรับสินค้าเข้า')}}}catch(e){}
     startData(cdb);return}
-  S.mode='local';S.isOwner=true; /* on this computer, whoever opens an empty folder first sets up the admin */
-  await localBoot();
+  S.isOwner=true; /* outside claude.ai, whoever opens an empty store first sets up the admin */
+  if(FIREBASE_CONFIG&&SHOP_EMAIL){await fbBoot();return}
+  S.mode='local';await localBoot();
 })();
 </script>
