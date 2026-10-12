@@ -369,6 +369,8 @@ tr.muted td{opacity:.5}
 .scan-view.miss .scan-frame::before{border-color:var(--bad);border-style:solid}
 .scan-msg{position:relative;z-index:2;max-width:86%;text-align:center;color:var(--rail-ink);font-size:.9rem;background:rgb(8 12 20/.6);padding:8px 14px;border-radius:10px}
 .scan-msg:empty{display:none}
+.scan-view{grid-auto-flow:row;align-content:center;gap:10px;justify-items:center}
+.scan-retry{position:relative;z-index:2}
 .scan-msg.err{background:var(--bad-soft);color:var(--bad)}
 .scan-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .scan-tools .inp{flex:1;min-width:160px}
@@ -580,7 +582,7 @@ td small{color:var(--muted);font-size:.75rem}
         <p class="auth-hint" id="suImport" hidden>มีข้อมูลเดิมอยู่แล้ว? <button class="linkbtn" type="button" data-bk-import>นำเข้าไฟล์ pos-data.json หรือไฟล์สำรอง</button></p>
       </form>
     </div>
-    <div class="auth-f"><span class="sdot" id="authDot"></span><span id="authState">กำลังเชื่อมต่อข้อมูล…</span><span class="ver">v2.0 ออนไลน์</span></div>
+    <div class="auth-f"><span class="sdot" id="authDot"></span><span id="authState">กำลังเชื่อมต่อข้อมูล…</span><span class="ver">v2.1 ออนไลน์</span></div>
   </div>
 </div>
 
@@ -872,7 +874,7 @@ td small{color:var(--muted);font-size:.75rem}
   <div class="modal-card wide" role="dialog" aria-modal="true" aria-labelledby="scmH">
     <div class="modal-h"><span class="kic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M4 12h16"/></svg></span><div><h3 id="scmH">สแกนเพื่อขาย</h3><span class="xm-sub" id="scmSub">หันบาร์โค้ดหรือ QR ของสินค้าเข้าหากล้อง</span></div><button class="x" id="scmClose" aria-label="ปิด">×</button></div>
     <div class="modal-b">
-      <div class="scan-view" id="scanView"><video id="scanVideo" playsinline muted></video><div class="scan-frame"><i></i></div><div class="scan-msg" id="scanMsg">กำลังเปิดกล้อง…</div></div>
+      <div class="scan-view" id="scanView"><video id="scanVideo" playsinline muted></video><div class="scan-frame"><i></i></div><div class="scan-msg" id="scanMsg">กำลังเปิดกล้อง…</div><button class="btn sm scan-retry" id="scanRetry" type="button" hidden>ลองเปิดกล้องอีกครั้ง</button></div>
       <div class="scan-tools">
         <select class="inp" id="scanCam" hidden aria-label="เลือกกล้อง"></select>
         <label class="btn" for="scanPhoto"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>ถ่ายรูป / เลือกรูปบาร์โค้ด</label>
@@ -1141,11 +1143,10 @@ async function openScanner(mode){SC.mode=mode;SC.last={};
   $('scanLog').innerHTML='';$('scmDone').textContent=mode==='stock'?'ปิด':'เสร็จ · ไปที่บิล';updScanSum();$('scm').hidden=false;
   try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();actx.resume?.()}catch(e){}
   await startCam()}
-async function startCam(deviceId){stopCam();setScanMsg('กำลังเปิดกล้อง…');
+async function startCam(deviceId){stopCam();setScanMsg('กำลังเปิดกล้อง…');$('scanRetry').hidden=true;
   if(!navigator.mediaDevices?.getUserMedia){setScanMsg('หน้านี้เปิดกล้องสดไม่ได้ ใช้ปุ่ม "ถ่ายรูป / เลือกรูปบาร์โค้ด" ด้านล่างแทน',true);return}
   try{SC.stream=await navigator.mediaDevices.getUserMedia({audio:false,video:deviceId?{deviceId:{exact:deviceId}}:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}})}
-  catch(e){setScanMsg(e.name==='NotFoundError'||e.name==='OverconstrainedError'?'ไม่พบกล้องในเครื่องนี้ ใช้ปุ่มถ่ายรูปหรือเครื่องสแกนบาร์โค้ดแทน'
-    :'เปิดกล้องสดไม่ได้ (ไม่ได้รับอนุญาต หรือหน้านี้ไม่อนุญาตให้ใช้กล้อง) ใช้ปุ่ม "ถ่ายรูป / เลือกรูปบาร์โค้ด" ด้านล่างแทน',true);return}
+  catch(e){setScanMsg(camHelp(e),true);$('scanRetry').hidden=false;return}
   if($('scm').hidden){stopCam();return}
   const v=$('scanVideo');v.srcObject=SC.stream;try{await v.play()}catch(e){}
   try{const devs=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput'),cur=SC.stream.getVideoTracks()[0]?.getSettings?.().deviceId;
@@ -1153,6 +1154,16 @@ async function startCam(deviceId){stopCam();setScanMsg('กำลังเปิ
   setScanMsg('กำลังเตรียมตัวอ่านบาร์โค้ด…');
   if(!await initDecoder()){setScanMsg('โหลดตัวอ่านบาร์โค้ดไม่ได้ ต้องต่ออินเทอร์เน็ต หรือใช้เครื่องสแกนแทน',true);return}
   setScanMsg('');scanLoop()}
+/* why the live camera failed, in words the cashier can act on */
+function inAppBrowser(){const u=navigator.userAgent||'';
+  return /\bLine\//i.test(u)?'LINE':/FBAN|FBAV|FB_IAB/i.test(u)?'Facebook':/Instagram/i.test(u)?'Instagram':/TikTok|musical_ly|BytedanceWebview/i.test(u)?'TikTok':/; wv\)/.test(u)?'แอป':''}
+function camHelp(e){const n=e?.name||'',app=inAppBrowser(),ios=/iPhone|iPad|iPod/i.test(navigator.userAgent||'');
+  const alt=' หรือใช้ปุ่ม "ถ่ายรูป / เลือกรูปบาร์โค้ด" ด้านล่างแทน';
+  if(n==='NotFoundError'||n==='OverconstrainedError')return 'ไม่พบกล้องในเครื่องนี้'+alt;
+  if(n==='NotReadableError'||n==='AbortError')return 'กล้องถูกแอปอื่นใช้อยู่ ปิดแอปกล้องหรือแอปวิดีโอคอลก่อน แล้วกดลองใหม่'+alt;
+  if(app)return `เบราว์เซอร์ใน${app==='แอป'?'แอปนี้':'แอป '+app} เปิดกล้องให้เว็บไม่ได้ ให้เปิดลิงก์นี้ใน ${ios?'Safari':'Chrome'} แทน (กด ⋮ หรือ ⋯ แล้วเลือก "เปิดในเบราว์เซอร์")`+alt;
+  if(n==='NotAllowedError'||n==='SecurityError')return (ios?'ยังไม่ได้อนุญาตกล้อง ไปที่ ตั้งค่า › Safari › กล้อง › อนุญาต แล้วกดลองใหม่':'ยังไม่ได้อนุญาตกล้อง แตะไอคอนแม่กุญแจหน้าลิงก์ › สิทธิ์ › กล้อง › อนุญาต แล้วกดลองใหม่')+alt;
+  return `เปิดกล้องสดไม่ได้ (${n||'ไม่ทราบสาเหตุ'})`+alt}
 function stopCam(){clearTimeout(SC.timer);SC.stream?.getTracks().forEach(t=>t.stop());SC.stream=null;const v=$('scanVideo');if(v)v.srcObject=null}
 async function scanLoop(){if(!SC.stream||$('scm').hidden)return;const v=$('scanVideo');
   if(v.readyState>=2&&v.videoWidth){try{const t=await readCode(v,v.videoWidth,v.videoHeight,false);if(t)onCamCode(t,false)}catch(e){}}
@@ -1180,6 +1191,7 @@ $('scmDone').onclick=()=>{closeScanner();if(SC.mode==='sell'&&S.cart.length&&mat
 $('scm').addEventListener('click',e=>{if(e.target===$('scm'))closeScanner()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('scm').hidden)closeScanner()});
 $('scanCam').onchange=e=>startCam(e.target.value);
+$('scanRetry').onclick=()=>startCam();
 $('scanPhoto').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;setScanMsg('กำลังอ่านบาร์โค้ดจากรูป…');
   if(!await initDecoder()){setScanMsg('โหลดตัวอ่านบาร์โค้ดไม่ได้ ต้องต่ออินเทอร์เน็ต',true);return}
   try{const bmp=await createImageBitmap(f);const t=await readCode(bmp,bmp.width,bmp.height,true);bmp.close?.();
