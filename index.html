@@ -402,6 +402,28 @@ tr.muted td{opacity:.5}
 .cat-form{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));align-items:end;border-top:1px dashed var(--line-2);padding-top:14px}
 .cat-form .form-foot{grid-column:1/-1}
 .cat-colors{display:flex;gap:6px;flex-wrap:wrap;min-height:40px;align-items:center}
+/* confirm dialog */
+.cfm-ic{background:var(--bad-soft)!important;color:var(--bad)!important}
+.cfm-prod{display:flex;gap:14px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2)}
+.cfm-prod>div{display:flex;flex-direction:column;gap:1px;min-width:0}
+.cfm-prod b{font:600 1.05rem var(--f-display)}
+.cfm-prod span{font-size:.85rem;color:var(--muted)}
+.cfm-prod .num{color:var(--ink);font-weight:600}
+.th.lg{width:68px;height:68px;border-radius:12px}
+.cfm-badge{width:56px;height:56px;border-radius:12px;flex:none;display:grid;place-items:center;background:var(--sunk);color:var(--ink-2)}
+.cfm-badge svg{width:28px;height:28px}
+.cfm-items{margin-top:10px;border:1px dashed var(--line-2);border-radius:10px;padding:8px 12px;display:flex;flex-direction:column;gap:4px;font-size:.86rem;max-height:30vh;overflow:auto}
+.cfm-items>div{display:grid;grid-template-columns:minmax(0,1fr) auto 84px;gap:10px;align-items:baseline}
+.cfm-items>div>span:last-child{text-align:right}
+.cfm-list{margin:12px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:.88rem;color:var(--ink-2)}
+.cfm-list li.warn{color:var(--bad);font-weight:600}
+.cfm-ck{display:flex;gap:10px;align-items:flex-start;margin-top:12px;padding:10px 12px;border:1.5px solid var(--bad);border-radius:10px;background:var(--bad-soft);color:var(--bad);font-size:.88rem;font-weight:600;cursor:pointer}
+.cfm-ck input{width:18px;height:18px;margin-top:1px;accent-color:var(--bad);flex:none}
+.cfm-f{flex-wrap:wrap}
+.cfm-r{display:flex;gap:8px;margin-left:auto}
+.btn.danger-solid{background:var(--bad);border-color:var(--bad);color:var(--surface);font-weight:600}
+.btn.danger-solid:hover{filter:brightness(1.08);background:var(--bad)}
+.btn.danger-solid:disabled:hover{background:var(--bad);border-color:var(--bad)}
 .pill.adj{background:var(--warn-soft);color:var(--warn)}
 .adj-h{display:inline-flex;align-items:center;gap:8px}
 .adj-now{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-size:.9rem;color:var(--ink-2)}
@@ -622,7 +644,7 @@ td small{color:var(--muted);font-size:.75rem}
         <p class="auth-hint" id="suImport" hidden>มีข้อมูลเดิมอยู่แล้ว? <button class="linkbtn" type="button" data-bk-import>นำเข้าไฟล์ pos-data.json หรือไฟล์สำรอง</button></p>
       </form>
     </div>
-    <div class="auth-f"><span class="sdot" id="authDot"></span><span id="authState">กำลังเชื่อมต่อข้อมูล…</span><span class="ver">v2.2 ออนไลน์</span></div>
+    <div class="auth-f"><span class="sdot" id="authDot"></span><span id="authState">กำลังเชื่อมต่อข้อมูล…</span><span class="ver">v2.4 ออนไลน์</span></div>
   </div>
 </div>
 
@@ -963,6 +985,16 @@ td small{color:var(--muted);font-size:.75rem}
       <div class="err" id="adjErr"></div>
       <div class="form-foot"><button class="btn" type="button" data-close>ยกเลิก</button><button class="btn pri" type="submit" id="adjSave">บันทึกการปรับสต๊อก</button></div>
     </form>
+  </div>
+</div>
+<div class="modal" id="cfm" hidden>
+  <div class="modal-card" role="alertdialog" aria-modal="true" aria-labelledby="cfmH" aria-describedby="cfmBody">
+    <div class="modal-h"><span class="kic cfm-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg></span><div><h3 id="cfmH"></h3><span class="xm-sub">ตรวจสอบให้แน่ใจก่อนยืนยัน</span></div></div>
+    <div class="modal-b">
+      <div id="cfmBody"></div>
+      <label class="cfm-ck" id="cfmCkWrap" hidden><input type="checkbox" id="cfmCk"><span id="cfmCkText"></span></label>
+    </div>
+    <div class="modal-f cfm-f"><button class="btn" type="button" id="cfmAlt" hidden></button><span class="cfm-r"><button class="btn" type="button" id="cfmCancel">ยกเลิก</button><button class="btn danger-solid" type="button" id="cfmOk"></button></span></div>
   </div>
 </div>
 <input type="file" id="bkFile" accept=".json,application/json" hidden>
@@ -1362,9 +1394,18 @@ $('v-sell').addEventListener('click',e=>{
   else if(b=e.target.closest('[data-dec]')){const l=S.cart.find(c=>c.pid===b.dataset.dec);if(l){l.qty--;if(l.qty<=0)S.cart=S.cart.filter(c=>c!==l);renderSell()}}
   else if(b=e.target.closest('[data-rm]')){S.cart=S.cart.filter(c=>c.pid!==b.dataset.rm);renderSell()}
   else if(b=e.target.closest('[data-cash]')){$('cashIn').value=b.dataset.cash;updateChange()}
-  else if(b=e.target.closest('[data-void]')){if(!curRole()?.void)return;
-    if(b.dataset.armed){voidSale(b.dataset.void)}else{b.dataset.armed='1';b.textContent='ยืนยัน?';setTimeout(()=>{if(b.isConnected){delete b.dataset.armed;b.textContent='ยกเลิก'}},4000)}}
+  else if(b=e.target.closest('[data-void]')){if(curRole()?.void)confirmVoid(b.dataset.void)}
 });
+async function confirmVoid(id){const s=S.sales.find(x=>x.id===id);if(!s)return;
+  const items=s.items||[],sub=s.subtotal??items.reduce((a,i)=>a+i.qty*i.price,0);
+  const r=await askConfirm({title:'ยกเลิกบิลนี้?',ok:'ยกเลิกบิล',
+    body:`<div class="cfm-prod"><span class="cfm-badge">${IC.receipt}</span><div><b class="mono">${esc(s.no)}</b><span>${tStr(s.at)} · ${PAY[s.pay]||''}${s.byName?' · '+esc(s.byName):''}</span><span class="num">${baht(s.total)}${s.discount>0?` <small class="c2">(ลด ${baht(s.discount)})</small>`:''}</span></div></div>
+      <div class="cfm-items">${items.map(i=>`<div><span>${esc(i.name)} <span class="c2">${esc(i.color)}</span></span><span class="num">×${fmt(i.qty)}</span><span class="num">${baht(i.qty*i.price)}</span></div>`).join('')}
+      ${s.discount>0?`<div class="c2"><span>ส่วนลด</span><span></span><span class="num">−${baht(s.discount)}</span></div>`:''}</div>
+      <ul class="cfm-list"><li>สินค้า ${fmt(s.qty||items.reduce((a,i)=>a+(+i.qty||0),0))} ชิ้นจะคืนเข้าสต๊อก</li>
+      <li class="warn">ยอดขาย ${baht(s.total)} จะถูกหักออกจากรายงาน และบิลนี้จะถูกลบถาวร</li>
+      ${s.pay==='cash'?`<li>อย่าลืมคืนเงินสด ${baht(s.total)} ให้ลูกค้า (ยอดที่ลูกค้าจ่ายจริงหลังหักเงินทอน)</li>`:`<li>ถ้าลูกค้าจ่ายด้วย${PAY[s.pay]||''} ต้องคืนเงินผ่านช่องทางนั้นแยกต่างหาก</li>`}</ul>`});
+  if(r==='ok')voidSale(id)}
 function billNo(t){const d=new Date(t),p=n=>String(n).padStart(2,'0');return 'B'+String(d.getFullYear()).slice(2)+p(d.getMonth()+1)+p(d.getDate())+'-'+p(d.getHours())+p(d.getMinutes())+p(d.getSeconds())}
 $('checkout').onclick=async()=>{
   if(!S.db||!S.cart.length||S.busy)return;
@@ -1409,6 +1450,17 @@ function renderProducts(){
       <td style="white-space:nowrap;text-align:right"><button class="btn sm" data-edit="${p.id}" data-w>แก้ไข</button> <button class="btn sm" data-toggle="${p.id}" data-w>${off?'แสดง':'ซ่อน'}</button>${curRole()?.catalog?` <button class="btn sm danger" data-pdel="${p.id}" data-w>ลบ</button>`:''}</td></tr>`}).join('')||`<tr><td colspan="8" style="color:var(--muted);text-align:center;padding-block:24px">ไม่พบสินค้า</td></tr>`;
   renderCats();
 }
+/* confirm dialog → 'ok' | 'alt' | null (cancel, backdrop, Esc); Cancel has the focus so Enter never deletes by accident */
+function askConfirm(o){return new Promise(res=>{const m=$('cfm'),ck=$('cfmCk'),ok=$('cfmOk');
+  $('cfmH').textContent=o.title;$('cfmBody').innerHTML=o.body;ok.textContent=o.ok;
+  $('cfmAlt').hidden=!o.alt;$('cfmAlt').textContent=o.alt||'';
+  $('cfmCkWrap').hidden=!o.check;$('cfmCkText').textContent=o.check||'';ck.checked=false;
+  const upd=()=>{ok.disabled=!!o.check&&!ck.checked};upd();ck.onchange=upd;
+  const key=e=>{if(e.key==='Escape'){e.stopPropagation();done(null)}};
+  const done=v=>{m.hidden=true;document.removeEventListener('keydown',key,true);m.onclick=ok.onclick=$('cfmAlt').onclick=$('cfmCancel').onclick=null;res(v)};
+  ok.onclick=()=>done('ok');$('cfmAlt').onclick=()=>done('alt');$('cfmCancel').onclick=()=>done(null);
+  m.onclick=e=>{if(e.target===m)done(null)};document.addEventListener('keydown',key,true);
+  m.hidden=false;setTimeout(()=>$('cfmCancel').focus(),30)})}
 /* ---- categories (admin) ---- */
 const CAT_COLORS=['#4A6FA8','#B8732F','#5F7D4B','#97475A','#2F8C8C','#7B5EA7','#C0912F','#5D6B7A','#B35C44','#3E7D5E'];
 let catEditId=null;
@@ -1443,7 +1495,12 @@ $('catList').addEventListener('click',async e=>{let b;
   else if(b=e.target.closest('[data-cdel]')){const id=b.dataset.cdel,c=catOf(id),n=S.products.filter(p=>p.cat===id).length;
     if(n){toast(`หมวด${c?.label} ยังมีสินค้า ${n} รายการ ย้ายไปหมวดอื่นหรือลบสินค้าก่อน`);return}
     if(CATS.length<=1){toast('ต้องมีหมวดสินค้าอย่างน้อย 1 หมวด');return}
-    if(!b.dataset.armed){b.dataset.armed='1';b.textContent='ยืนยันลบ?';setTimeout(()=>{if(b.isConnected){delete b.dataset.armed;b.textContent='ลบ'}},4000);return}
+    const nb=S.sales.filter(s=>(s.items||[]).some(i=>i.cat===id)).length;
+    const r=await askConfirm({title:'ลบหมวดสินค้านี้?',ok:'ลบหมวด',
+      body:`<div class="cfm-prod"><span class="cfm-badge" style="background:${catVar(id)}"></span><div><b>${esc(c?.label||'')}</b><span>อักษรนำหน้ารหัส <span class="mono">${esc(c?.prefix||'—')}</span></span><span>สินค้าในหมวด 0 รายการ</span></div></div>
+        <ul class="cfm-list"><li>หมวดนี้จะหายจากฟอร์มเพิ่มสินค้า หน้าขาย และตัวกรองทุกหน้า</li>
+        <li>บิลเก่า ${fmt(nb)} บิลที่มีสินค้าหมวดนี้ยังแสดงชื่อหมวดเหมือนเดิม ยอดขายย้อนหลังไม่เปลี่ยน</li></ul>`});
+    if(r!=='ok')return;
     try{await seedCats();await S.db.doc('cats/'+id).update({deleted:true});if(catEditId===id)resetCatForm();if(S.prodCat===id)S.prodCat='all';if(S.sellCat===id)S.sellCat='all';toast(`ลบหมวด${c?.label}แล้ว`)}
     catch(x){toast(dbErr(x))}}});
 $('prodSearch').addEventListener('input',renderProducts);
@@ -1473,8 +1530,15 @@ $('v-products').addEventListener('click',async e=>{let b;
   else if(b=e.target.closest('[data-toggle]')){const p=prodById(b.dataset.toggle);if(!p)return;
     try{await S.db.doc('products/'+p.id).update({active:p.active===false})}catch(err){toast(dbErr(err))}}
   else if(b=e.target.closest('[data-pdel]')){const p=prodById(b.dataset.pdel);if(!p||!curRole()?.catalog)return;
-    if(!b.dataset.armed){const st=stockMap()[p.id]||0;b.dataset.armed='1';b.textContent=st>0?`ยืนยัน? เหลือ ${fmt(st)} ชิ้น`:'ยืนยันลบ?';
-      setTimeout(()=>{if(b.isConnected){delete b.dataset.armed;b.textContent='ลบ'}},4000);return}
+    const st=stockMap()[p.id]||0,nb=S.sales.filter(s=>(s.items||[]).some(i=>i.pid===p.id)).length;
+    const r=await askConfirm({title:'ลบสินค้านี้?',ok:'ลบสินค้า',alt:p.active===false?null:'ซ่อนจากหน้าขายแทน',
+      check:st>0?`รับทราบว่าสินค้านี้ยังมีสต๊อก ${fmt(st)} ชิ้น และต้องการลบทิ้ง`:null,
+      body:`<div class="cfm-prod">${thumb(p,'lg')}<div><b>${esc(p.name)}</b><span>สี${esc(p.color)} · ${esc(catLabel(p.cat))}</span>${p.code?`<span class="mono">${esc(p.code)}</span>`:''}<span class="num">${baht(p.price)}</span></div></div>
+        <ul class="cfm-list"><li class="${st>0?'warn':''}">คงเหลือในสต๊อก <b>${fmt(st)} ชิ้น</b>${st>0?' จะหายไปพร้อมสินค้า':''}</li>
+        <li>ประวัติการขาย ${fmt(nb)} บิลยังอยู่ครบ ยอดขายย้อนหลังไม่เปลี่ยน</li>
+        <li>รูป รหัส และบาร์โค้ดของสินค้านี้จะถูกลบ กู้คืนไม่ได้ ยกเว้นนำเข้าจากไฟล์สำรอง</li></ul>`});
+    if(r==='alt'){try{await S.db.doc('products/'+p.id).update({active:false});toast(`ซ่อน ${p.name} ${p.color} จากหน้าขายแล้ว`)}catch(x){toast(dbErr(x))}return}
+    if(r!=='ok')return;
     try{await S.db.doc('products/'+p.id).delete();if(p.img)imgDel(p.img);if(S.editId===p.id)resetPForm();S.cart=S.cart.filter(l=>l.pid!==p.id);
       toast(`ลบ ${p.name} ${p.color} แล้ว · ประวัติการขายเดิมยังอยู่`)}catch(err){toast(dbErr(err))}}
 });
@@ -2043,7 +2107,14 @@ $('v-users').addEventListener('click',async e=>{let b;
     $('uName').focus();window.scrollTo({top:0,behavior:'smooth'})}
   else if(b=e.target.closest('[data-udel]')){const id=b.dataset.udel,u=S.users.find(x=>x.id===id);if(!u||id===S.meId)return;
     if(u.role==='admin'&&u.active!==false&&!activeAdmins(id)){toast('ต้องมีผู้ดูแลระบบที่ใช้งานอยู่อย่างน้อย 1 คน');return}
-    if(!b.dataset.armed){b.dataset.armed='1';b.textContent='ยืนยันลบ?';setTimeout(()=>{if(b.isConnected){delete b.dataset.armed;b.textContent='ลบ'}},4000);return}
+    const nb=S.sales.filter(s=>s.by===u.username).length,canDisable=u.active!==false;
+    const r=await askConfirm({title:'ลบผู้ใช้นี้?',ok:'ลบผู้ใช้',alt:canDisable?'ปิดใช้งานแทน':null,
+      body:`<div class="cfm-prod"><span class="avatar lg" data-r="${esc(u.role)}">${esc(initial(u.name))}</span><div><b>${esc(u.name)}</b><span class="mono">@${esc(u.username)}</span><span>${ROLES[u.role]?.label||esc(u.role)} · ${u.active===false?'ปิดใช้งานอยู่':'ใช้งานอยู่'}</span><span>เข้าใช้ล่าสุด ${u.lastLogin?tStr(u.lastLogin):'ยังไม่เคยเข้า'}</span></div></div>
+        <ul class="cfm-list"><li class="warn">บัญชีนี้จะเข้าสู่ระบบไม่ได้อีก ถ้าต้องการใช้อีกต้องสร้างบัญชีใหม่</li>
+        <li>บิลที่บัญชีนี้ขายไว้ ${fmt(nb)} บิลยังอยู่ครบ และยังแสดงชื่อพนักงานเดิม</li>
+        ${canDisable?'<li>ถ้าอาจกลับมาใช้อีก เลือก "ปิดใช้งานแทน" แล้วเปิดใช้งานใหม่ได้ภายหลัง</li>':''}</ul>`});
+    if(r==='alt'){try{await S.db.doc('users/'+id).update({active:false});toast(`ปิดใช้งาน @${u.username} แล้ว`)}catch(x){toast(dbErr(x))}return}
+    if(r!=='ok')return;
     try{await S.db.doc('users/'+id).delete();if(S.editUid===id)resetUForm();toast(`ลบผู้ใช้ @${u.username} แล้ว`)}catch(x){toast(dbErr(x))}}
 });
 $('uform').addEventListener('submit',async e=>{e.preventDefault();if(!S.db||!isAdmin())return;const err=$('uErr'),ed=S.editUid;
